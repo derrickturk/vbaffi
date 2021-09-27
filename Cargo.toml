@@ -1,0 +1,15 @@
+[package]
+name = "vbaffi"
+version = "0.1.0"
+edition = "2018"
+authors = ["derrickturk <dwt@terminusdatascience.com>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name="vbaffi"
+crate-type = ["cdylib"]
+
+[dependencies.winapi]
+version = "^0.3"
+features = ["oaidl", "oleauto", "winerror", "wtypes"]

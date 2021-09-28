@@ -7,8 +7,8 @@ use winapi::{
     },
 };
 
-mod safevec;
-use safevec::SafeVec;
+mod safeslice;
+use safeslice::SafeSlice;
 
 #[repr(C)]
 pub struct ExampleUDT {
@@ -26,7 +26,7 @@ fn sum_values(udt: *const ExampleUDT) -> f64 {
 #[no_mangle]
 pub unsafe extern "system"
 fn hypersum_values(udts: *mut LPSAFEARRAY) -> f64 {
-    if let Some(values) = SafeVec::new(*udts) {
+    if let Some(values) = SafeSlice::new(*udts) {
         values.as_slice().iter().map(|udt| sum_values_impl(udt)).sum()
     } else {
         0.0
@@ -36,14 +36,14 @@ fn hypersum_values(udts: *mut LPSAFEARRAY) -> f64 {
 #[no_mangle]
 pub unsafe extern "system"
 fn alter_values(udt: *const ExampleUDT) {
-    if let Some(values) = SafeVec::new((*udt).values) {
+    if let Some(values) = SafeSlice::new((*udt).values) {
         values.as_mut_slice().iter_mut().for_each(|x: &mut f64| *x *= 1.2);
     }
 }
 
 #[inline]
 fn sum_values_impl(udt: &ExampleUDT) -> f64 {
-    if let Some(values) = unsafe { SafeVec::new(udt.values) } {
+    if let Some(values) = unsafe { SafeSlice::new(udt.values) } {
         values.as_slice().iter().sum()
     } else {
         0.0

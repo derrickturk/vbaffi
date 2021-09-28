@@ -13,12 +13,12 @@ use winapi::{
     },
 };
 
-pub struct SafeVec<T> {
+pub struct SafeSlice<T> {
     wrapped: LPSAFEARRAY,
     data: *mut T,
 }
 
-impl<T> SafeVec<T> {
+impl<T> SafeSlice<T> {
     /* SAFETY: ensure that array is a pointer to a valid SAFEARRAY object
      *   (and, ideally, that it contains values of type T - we check the element
      *   size but have no way to check the element type)
@@ -35,7 +35,7 @@ impl<T> SafeVec<T> {
               return None;
         }
 
-        Some(SafeVec {
+        Some(SafeSlice {
             wrapped: array,
             data: data,
         })
@@ -58,7 +58,7 @@ impl<T> SafeVec<T> {
     }
 }
 
-impl<T> Drop for SafeVec<T> {
+impl<T> Drop for SafeSlice<T> {
     #[inline]
     fn drop(&mut self) {
         unsafe { SafeArrayUnaccessData(self.wrapped); }

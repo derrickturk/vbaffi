@@ -9,6 +9,9 @@ Public Declare PtrSafe Function hypersum_values Lib "vbaffi.dll" ( _
 Public Declare PtrSafe Sub alter_values Lib "vbaffi.dll" ( _
   ByRef ex As ExampleUDT)
 
+Public Declare PtrSafe Function make_array Lib "vbaffi.dll" () _
+  As Long()
+
 Public Type ExampleUDT
     Magic As Long
     Name As String
@@ -44,5 +47,11 @@ Public Sub DoItTryIt()
 
     For i = 1 To 10
         Debug.Print ex.Values(i)
+    Next i
+
+    Dim xs() As Long
+    xs = make_array()
+    For i = LBound(xs) To UBound(xs)
+        Debug.Print xs(i)
     Next i
 End Sub

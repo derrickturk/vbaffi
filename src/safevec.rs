@@ -25,7 +25,7 @@ pub trait SafeArrayStorable {
 
 pub struct SafeVec<T> {
     wrapped: LPSAFEARRAY,
-    marker: PhantomData<T>,
+    marker: PhantomData<*const T>,
 }
 
 impl<T> SafeVec<T> {

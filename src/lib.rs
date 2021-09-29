@@ -37,7 +37,7 @@ use safeslice::SafeSlice;
 mod safevec;
 use safevec::SafeVec;
 
-#[repr(C)]
+#[repr(C, packed(4))]
 pub struct ExampleUDT {
     magic: i32,
     name: BSTR,

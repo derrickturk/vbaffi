@@ -78,7 +78,7 @@ impl<T> SafeVec<T> {
      */
     #[inline]
     pub fn as_safeslice(&mut self) -> SafeSlice<T> {
-        unsafe { SafeSlice::new(self.wrapped).unwrap() }
+        SafeSlice::new(self.wrapped).unwrap()
     }
 
     /* release ownership and return the raw pointer (e.g. to return via FFI)

@@ -31,13 +31,26 @@ use winapi::{
         },
     },
     shared::{
-        winerror::S_OK,
+        winerror::{
+            E_INVALIDARG,
+            E_UNEXPECTED,
+            S_OK,
+        },
     },
 };
 
+#[derive(Debug)]
 pub struct SafeSlice<T> {
     wrapped: LPSAFEARRAY,
     data: *mut T,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum SafeSliceError {
+    InvalidSafeArray,
+    LockFailed,
+    InvalidDimensions(usize),
+    InvalidElementSize(usize),
 }
 
 impl<T> SafeSlice<T> {
@@ -45,19 +58,32 @@ impl<T> SafeSlice<T> {
      *   (and, ideally, that it contains values of type T - we check the element
      *   size but have no way to check the element type)
      */
-    pub unsafe fn new(array: LPSAFEARRAY) -> Option<Self> {
+    pub fn new(array: LPSAFEARRAY) -> Result<Self, SafeSliceError> {
         let mut data: *mut T = ptr::null_mut();
-        if SafeArrayAccessData(array, &mut data as *mut _ as *mut _) != S_OK {
-            return None;
+        let res = unsafe {
+            SafeArrayAccessData(array, &mut data as *mut _ as *mut _)
+        };
+        match res {
+            E_INVALIDARG => return Err(SafeSliceError::InvalidSafeArray),
+            E_UNEXPECTED => return Err(SafeSliceError::LockFailed),
+            S_OK => {},
+            _ => panic!("undocumented HRESULT from SafeArrayAccessData!"),
+        };
+
+        let dims = unsafe { (*array).cDims as usize };
+        let elt_size = unsafe { (*array).cbElements as usize };
+
+        if dims != 1 {
+              unsafe { SafeArrayUnaccessData(array); }
+              return Err(SafeSliceError::InvalidDimensions(dims));
         }
 
-        if (*array).cDims != 1
-          || (*array).cbElements as usize != mem::size_of::<T>() {
-              SafeArrayUnaccessData(array);
-              return None;
+        if elt_size != mem::size_of::<T>() {
+              unsafe { SafeArrayUnaccessData(array); }
+              return Err(SafeSliceError::InvalidElementSize(elt_size));
         }
 
-        Some(SafeSlice {
+        Ok(SafeSlice {
             wrapped: array,
             data: data,
         })
